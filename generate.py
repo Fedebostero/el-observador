@@ -139,21 +139,36 @@ def collect(cfg, now):
     since = now - timedelta(hours=window)
     with ThreadPoolExecutor(max_workers=8) as ex:
         results = list(ex.map(fetch_feed, cfg["feeds"]))
-    kw = cfg["legal_keywords"]
     by_sec = {k: [] for k, _ in SECCIONES}
     seen_links = set()
     for items in results:
         for it in items:
             if it["dt"].astimezone(AR) < since or it["link"] in seen_links:
                 continue
-            if it["legal_only"] and not any(k in it["title"].lower() for k in kw):
+            if it["legal_only"] and not is_legal(it["title"], cfg):
                 continue
             seen_links.add(it["link"])
             by_sec[it["section"]].append(it)
-    for k in by_sec:
+    # Una misma noticia no puede estar en dos secciones: se asigna primero a
+    # Derecho, luego a Finanzas y por último a País.
+    toks = []
+    for k in ("derecho", "finanzas", "pais"):
         by_sec[k].sort(key=lambda x: x["dt"], reverse=True)
-        by_sec[k] = dedupe(by_sec[k])[:25]
+        kept = []
+        for it in by_sec[k]:
+            tk = norm_tokens(it["title"])
+            if any(tk and o and len(tk & o) / min(len(tk), len(o)) >= 0.6 for o in toks):
+                continue
+            kept.append(it)
+            toks.append(tk)
+        by_sec[k] = kept[:25]
     return by_sec
+
+
+def is_legal(title, cfg):
+    """Coincidencia por palabra completa (evita que 'marca' active 'ARCA')."""
+    pat = r"(?<!\w)(" + "|".join(re.escape(k.strip()) for k in cfg["legal_keywords"]) + r")"
+    return re.search(pat, title.lower()) is not None
 
 
 # ------------------------------------------------------------------ indicadores
@@ -276,8 +291,11 @@ def ai_edit(cfg, by_sec):
             lines.append(f'{n}|{it["src"]}|{it["title"]}')
     prompt = (
         "Sos el editor de un diario económico argentino para un abogado comercialista de Entre Ríos. "
-        "Abajo hay titulares candidatos (id|medio|titular) en tres secciones. Elegí solo lo importante, "
-        "sin repetir el mismo hecho. Para cada elegido escribí un título nuevo de 4 a 6 palabras, claro y sin "
+        "Abajo hay titulares candidatos (id|medio|titular), agrupados por la sección de donde vienen; podés "
+        "asignar cada uno a la sección que corresponda (PAÍS: política, gobierno, Congreso, decisiones de "
+        "política económica, sociedad; FINANZAS: dólar, mercados, inflación, empresas, mundo financiero; "
+        "DERECHO: ver abajo). Descartá deportes, espectáculos y policiales sin trascendencia. Elegí solo lo "
+        "importante, sin repetir el mismo hecho. Para cada elegido escribí un título nuevo de 4 a 6 palabras, claro y sin "
         "sensacionalismo, solo con lo que dice el titular original. En DERECHO elegí únicamente novedades "
         "nacionales relevantes (leyes, decretos, fallos de la Corte o cámaras, normativa tributaria, societaria, "
         "concursal, laboral, procesal); si no hay nada realmente relevante, devolvé menos o una lista vacía. "
@@ -305,15 +323,18 @@ def ai_edit(cfg, by_sec):
         print("  [falla IA, sigo sin IA]:", e, file=sys.stderr)
         return None
 
-    def pick(lst, sec, cap):
+    used = set()
+
+    def pick(lst, cap):
         out = []
-        for x in lst[:cap]:
+        for x in lst:
             it = flat.get(x.get("id")) if isinstance(x, dict) else None
-            if it and it["section"] == sec:
+            if it and it["link"] not in used and len(out) < cap:
+                used.add(it["link"])
                 out.append(dict(it, short=str(x.get("t", "")).strip()[:80] or it["title"]))
         return out
 
-    res = {sec: pick(data.get(sec, []), sec, cfg["max_items"][sec]) for sec, _ in SECCIONES}
+    res = {sec: pick(data.get(sec, []), cfg["max_items"][sec]) for sec, _ in SECCIONES}
     res["portada"] = [flat[i] for i in data.get("portada", []) if isinstance(i, int) and i in flat][:3]
     res["jornada"] = str(data.get("jornada", "")).strip()
     return res
@@ -325,8 +346,7 @@ def plain_edit(cfg, by_sec):
     for sec, _ in SECCIONES:
         items = by_sec[sec]
         if sec == "derecho":
-            kw = cfg["legal_keywords"]
-            items = [i for i in items if any(k in i["title"].lower() for k in kw)]
+            items = [i for i in items if is_legal(i["title"], cfg)]
         res[sec] = [dict(i, short=i["title"]) for i in items[: min(cfg["max_items"][sec], 4 if sec == "derecho" else 99)]]
     res["portada"] = [x for sec in ("pais", "finanzas", "derecho") for x in res[sec][:1]][:3]
     res["jornada"] = ""

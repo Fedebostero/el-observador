@@ -4,7 +4,7 @@
   "ai_model": "claude-haiku-5-5",
   "feeds": [
     { "name": "Infobae", "section": "pais", "url": "https://www.infobae.com/arc/outboundfeeds/rss/category/politica/" },
-    { "name": "La Nación", "section": "pais", "url": "https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml", "path_include": ["/politica/", "/economia/"] },
+    { "name": "La Nación", "section": "pais", "url": "https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml", "path_include": ["/politica/"] },
     { "name": "Clarín", "section": "pais", "url": "https://www.clarin.com/rss/politica/" },
     { "name": "Ámbito", "section": "pais", "url": "https://www.ambito.com/rss/pages/politica.xml" },
 
