@@ -1,0 +1,40 @@
+{
+  "start_date": "2026-11-24",
+  "max_items": { "pais": 6, "finanzas": 6, "derecho": 5 },
+  "ai_model": "claude-haiku-5-5",
+  "feeds": [
+    { "name": "Infobae", "section": "pais", "url": "https://www.infobae.com/arc/outboundfeeds/rss/category/politica/" },
+    { "name": "La Nación", "section": "pais", "url": "https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml", "path_include": ["/politica/", "/economia/"] },
+    { "name": "Clarín", "section": "pais", "url": "https://www.clarin.com/rss/politica/" },
+    { "name": "Ámbito", "section": "pais", "url": "https://www.ambito.com/rss/pages/politica.xml" },
+
+    { "name": "Infobae", "section": "finanzas", "url": "https://www.infobae.com/arc/outboundfeeds/rss/category/economia/" },
+    { "name": "Ámbito", "section": "finanzas", "url": "https://www.ambito.com/rss/pages/economia.xml" },
+    { "name": "Ámbito", "section": "finanzas", "url": "https://www.ambito.com/rss/pages/finanzas.xml" },
+    { "name": "El Cronista", "section": "finanzas", "url": "https://www.cronista.com/files/rss/economia.xml" },
+    { "name": "La Nación", "section": "finanzas", "url": "https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml", "path_include": ["/economia/"] },
+    { "name": "Mercados", "section": "finanzas", "url": "https://news.google.com/rss/search?q=%22Wall+Street%22+OR+Nvidia+OR+Bitcoin+OR+%22Reserva+Federal%22+OR+petr%C3%B3leo+when:1d&hl=es-419&gl=AR&ceid=AR:es-419", "use_item_source": true },
+
+    { "name": "Derecho", "section": "derecho", "url": "https://news.google.com/rss/search?q=%22Corte+Suprema%22+fallo+when:2d&hl=es-419&gl=AR&ceid=AR:es-419", "use_item_source": true },
+    { "name": "Derecho", "section": "derecho", "url": "https://news.google.com/rss/search?q=%22Bolet%C3%ADn+Oficial%22+decreto+OR+resoluci%C3%B3n+OR+ley+when:1d&hl=es-419&gl=AR&ceid=AR:es-419", "use_item_source": true },
+    { "name": "Derecho", "section": "derecho", "url": "https://news.google.com/rss/search?q=ARCA+OR+CNV+%22resoluci%C3%B3n+general%22+OR+concursos+OR+quiebras+OR+sociedades+when:2d&hl=es-419&gl=AR&ceid=AR:es-419", "use_item_source": true },
+    { "name": "Derecho", "section": "derecho", "url": "https://news.google.com/rss/search?q=%22reforma%22+%22C%C3%B3digo+Civil+y+Comercial%22+OR+%22reforma+laboral%22+OR+%22reforma+tributaria%22+when:3d&hl=es-419&gl=AR&ceid=AR:es-419", "use_item_source": true },
+    { "name": "Infobae", "section": "derecho", "url": "https://www.infobae.com/arc/outboundfeeds/rss/category/politica/", "legal_only": true },
+    { "name": "La Nación", "section": "derecho", "url": "https://www.lanacion.com.ar/arc/outboundfeeds/rss/?outputType=xml", "legal_only": true }
+  ],
+  "legal_keywords": [
+    "corte suprema", "fallo", "sentencia", "cámara federal", "cámara nacional", "tribunal", "juez", "jueces",
+    "decreto", "dnu", "boletín oficial", "reforma", "código", "resolución general", "arca", "cnv",
+    "concurso", "quiebra", "sociedades", "fideicomiso", "tributari", "laboral", "amparo",
+    "inconstitucional", "magistrad", "procurador", "ley de", "ley ", "justicia"
+  ],
+  "markets": [
+    { "label": "S&P 500", "yahoo": "^GSPC", "stooq": "^spx", "decimals": 0 },
+    { "label": "Nasdaq", "yahoo": "^IXIC", "stooq": "^ndq", "decimals": 0 },
+    { "label": "Dow Jones", "yahoo": "^DJI", "stooq": "^dji", "decimals": 0 },
+    { "label": "Nvidia", "yahoo": "NVDA", "stooq": "nvda.us", "decimals": 2, "prefix": "US$ " },
+    { "label": "Oro", "yahoo": "GC=F", "stooq": "gc.f", "decimals": 0, "prefix": "US$ " },
+    { "label": "Petróleo WTI", "yahoo": "CL=F", "stooq": "cl.f", "decimals": 2, "prefix": "US$ " },
+    { "label": "Bitcoin", "coingecko": "bitcoin", "yahoo": "BTC-USD", "decimals": 0, "prefix": "US$ " }
+  ]
+}
