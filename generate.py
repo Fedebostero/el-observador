@@ -114,21 +114,32 @@ def fetch_feed(feed):
     return res
 
 
+GENERICAS = {"gobierno", "argentina", "argentino", "argentinos", "nacional", "millones", "según",
+             "semana", "presidente", "ministro", "después", "tras", "hasta", "sobre", "desde",
+             "cómo", "cuáles", "claves", "qué", "porque", "mientras", "nueva", "nuevo", "hoy"}
+
+
 def norm_tokens(t):
     t = re.sub(r"[^\w\s]", " ", t.lower())
     return {w for w in t.split() if len(w) > 3}
+
+
+def same_story(a, b):
+    """Dos titulares cuentan el mismo hecho si comparten buena parte de sus palabras
+    o al menos dos palabras distintivas (nombres propios, temas)."""
+    if not a or not b:
+        return False
+    if len(a & b) / min(len(a), len(b)) >= 0.6:
+        return True
+    fuertes = {w for w in (a & b) if len(w) > 5 and w not in GENERICAS}
+    return len(fuertes) >= 2
 
 
 def dedupe(items):
     kept, toks = [], []
     for it in items:
         tk = norm_tokens(it["title"])
-        dup = False
-        for other in toks:
-            if tk and other and len(tk & other) / min(len(tk), len(other)) >= 0.6:
-                dup = True
-                break
-        if not dup:
+        if not any(same_story(tk, o) for o in toks):
             kept.append(it)
             toks.append(tk)
     return kept
@@ -157,7 +168,7 @@ def collect(cfg, now):
         kept = []
         for it in by_sec[k]:
             tk = norm_tokens(it["title"])
-            if any(tk and o and len(tk & o) / min(len(tk), len(o)) >= 0.6 for o in toks):
+            if any(same_story(tk, o) for o in toks):
                 continue
             kept.append(it)
             toks.append(tk)
